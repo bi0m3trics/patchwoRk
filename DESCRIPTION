@@ -9,7 +9,7 @@ Description: This package implements multiple patch delineation algorithms [at p
 URL: https://github.com/bi0m3trics/patchwoRk
 BugReports: https://github.com/bi0m3trics/patchwoRk/issues
 License: GPL-3
-Depends: raster (>= 2.8-19), RANN (>= 2.6.1), doParallel (>= 1.0.14), foreach (>= 1.4.4)
+Depends: raster (>= 2.8-19), RANN (>= 2.6.1), doSNOW (>= 0.4-3), foreach (>= 1.4.4)
 Suggests: 
     iterators,
     parallel,

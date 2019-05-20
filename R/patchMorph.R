@@ -138,19 +138,25 @@ patchMorph.pmMulti <- function(data_in, suitVals=c(0,1,2), gapVals=c(2,8,4), spu
   spurSeq <- seq(spurVals[1], spurVals[2], (spurVals[2] - spurVals[1]) / (spurVals[3] - 1))
 
   outList <- list()
-  cl <- parallel::makeCluster(pmax(1, parallel::detectCores()-2))
-  doParallel::registerDoParallel(cl)
+  cores <- parallel::detectCores()-1
+  cl <- makeSOCKcluster(cores)
+  registerDoSNOW(cl)
+  nitrs <- length(suitSeq)*length(gapSeq)*length(spurSeq)
+  pb <- txtProgressBar(min=1, max=nitrs, style=3)
+  progress <- function(n) setTxtProgressBar(pb, n)
+  opts <- list(progress=progress)
 
   outList<-
     foreach (i = 1:length(suitSeq)) %:% # nesting operator
     foreach (j = 1:length(gapSeq)) %:% # nesting operator
-    foreach (k = 1:length(spurSeq), .packages=c('RANN', 'raster', 'foreach', 'doParallel'), .combine=c,
-             .verbose=FALSE,
+    foreach (k = 1:length(spurSeq), .packages=c('RANN', 'raster', 'foreach', 'doSNOW'), .options.snow=opts,
+             .combine=c, .verbose=FALSE,
              .export = c("getCircleKernel", "matrixToRaster","matrixToRaster.default",
                          "matrixToRaster.RasterLayer","patchMorph","patchMorph.pmMulti",
                          "patchMorph.RasterLayer","patchMorphSummary")) %dopar% {
                            patchMorph(data_in, suitThresh = suitSeq[i], gapThresh = gapSeq[j], spurThresh = spurSeq[k])
                          }
+  close(pb)
   stopCluster(cl)
   outList <- unlist(outList)
   labels <- expand.grid(q=suitSeq,r=gapSeq, s=spurSeq)
