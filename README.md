@@ -1,5 +1,5 @@
 
-patchwoRk <img src="hexsticker/patchwork.png" align="right"/>
+patchwoRk <img src="hexsticker/patchwork.png" align="right" width="150"/>
 ======================================================================================================
 The patchwoRk package implements multiple patch delineation algorithms [at present it only implements 'PatchMorph' (Girvetz & Greco 2007), which can delineate patches across a range of spatial scales based on three organism-specific thresholds - (1) land cover density threshold, (2) habitat gap maximum thickness (gap threshold), and (3) habitat patch minimum thickness (spur threshold)].
 
@@ -29,11 +29,7 @@ RStoolbox::ggR(pm.layered.sum.map, geom_raster = TRUE) +
 ```
 
 # Install `patchwoRk`
-* The latest released version from CRAN with
-```r
-install.packages("patchwoRk")
-```
-* The latest stable development version from github with
+* Get the latest stable development version from github with
 ```r
 devtools::install_github("bi0m3trics/patchwoRk")
 ```
@@ -42,4 +38,4 @@ To install the package from github make sure you have a working development envi
 * **Mac**: Install `Xcode` from the Mac App Store.
 
 # Changelog
-point to NEWS.md
+point to <a href="https://github.com/bi0m3trics/patchwoRk/blob/master/NEWS.md">NEWS.md</a>
