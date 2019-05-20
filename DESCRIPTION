@@ -1,0 +1,21 @@
+Package: patchwoRk
+Type: Package
+Title: Patch Delineation Package
+Version: 1.0.0
+Date: 2019-05-20
+Author: Andrew Sánchez Meador, School of Foresty, Northern Arizona University
+Maintainer: Andrew Sánchez Meador <andrew.sanchezmeador@nau.edu>
+Description: This package implements multiple patch delineation algorithms [at present it only implements 'PatchMorph' (Girvetz & Greco 2007), which can delineate patches across a range of spatial scales based on three organism-specific thresholds - (1) land cover density threshold, (2) habitat gap maximum thickness (gap threshold), and (3) habitat patch minimum thickness (spur threshold)].
+URL: https://github.com/bi0m3trics/patchwoRk
+BugReports: https://github.com/bi0m3trics/patchwoRk/issues
+License: GPL-3
+Depends: raster (>= 2.8-19), RANN (>= 2.6.1), doParallel (>= 1.0.14), foreach (>= 1.4.4)
+Suggests: 
+    iterators,
+    parallel,
+    knitr,
+    rmarkdown
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
+VignetteBuilder: knitr
