@@ -127,12 +127,10 @@ patchMorph.RasterLayer <- function(data_in, suitThresh = 1, gapThresh = 2, spurT
 #' @export
 patchMorph.pmMulti <- function(data_in, suitVals=c(0,1,2), gapVals=c(2,8,4), spurVals=c(2,8,4), ...)
 {
-  if(class(data_in) == "SpatialPolygonsDataFrame")
-    data_in <- polygonToRaster(data_in, ...)
-  else if(class(data_in) == "matrix" || class(data_in) == "data.frame")
+  if(class(data_in) == "matrix")
     data_in <- matrixToRaster(data_in, ...)
   else if(class(data_in) != "RasterLayer")
-    stop("data_in must be of class RasterLayer, SpatialPolygonsDataFrame, matrix, or data.frame")
+    stop("data_in must be of class RasterLayer, matrix, or data.frame")
 
   ## As in the paper, we won't consider the lowest suitability class
   suitSeq <- seq(suitVals[1], suitVals[2], (suitVals[2] - suitVals[1]) / (suitVals[3] - 1))[-1]
@@ -150,8 +148,7 @@ patchMorph.pmMulti <- function(data_in, suitVals=c(0,1,2), gapVals=c(2,8,4), spu
              .verbose=FALSE,
              .export = c("getCircleKernel", "matrixToRaster","matrixToRaster.default",
                          "matrixToRaster.RasterLayer","patchMorph","patchMorph.pmMulti",
-                         "patchMorph.RasterLayer","patchMorph.SpatialPolygonsDataFrame",
-                         "patchMorphSummary","polygonToRaster")) %dopar% {
+                         "patchMorph.RasterLayer","patchMorphSummary")) %dopar% {
                            patchMorph(data_in, suitThresh = suitSeq[i], gapThresh = gapSeq[j], spurThresh = spurSeq[k])
                          }
   stopCluster(cl)
