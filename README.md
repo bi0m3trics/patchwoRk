@@ -3,6 +3,7 @@ patchwoRk <img src="hexsticker/patchwork.png" align="right" width="150"/>
 ======================================================================================================
 The patchwoRk package implements multiple patch delineation algorithms [at present it only implements 'PatchMorph' (Girvetz & Greco 2007), which can delineate patches across a range of spatial scales based on three organism-specific thresholds - (1) land cover density threshold, (2) habitat gap maximum thickness (gap threshold), and (3) habitat patch minimum thickness (spur threshold)].
 
+<img src="images/single.png" align="right" width="350"/>
 ### Read in a raster and produce a single suit-gap-spur outcome as a raster
 Here is some description text
 ```r
@@ -19,8 +20,7 @@ mapview::mapview(pm.result.map_0.05m,
                  legend = FALSE, 
                  maxpixels=1000000)
 ```
-<img src="images/single.png" align="right" width="350"/>
-
+<img src="images/multi.png" align="right" width="350"/>
 ### Compute all suit-gap-spur combination outcomes as a raster
 Here is some description text
 ```r
@@ -33,7 +33,6 @@ mapview::mapview(pm.layered.sum.map,
                  legend = FALSE, 
                  maxpixels=1000000)
 ```
-<img src="images/multi.png" align="right" width="350"/>
 
 # Install `patchwoRk`
 * Get the latest stable development version from github with
