@@ -13,8 +13,13 @@ example.ras <- raster("./tifs/ClippedFUWI_1.5-3.tif")
 #-------0.5m ratser------------------------------
 pm.result.map_0.05m <- patchMorph(data_in = example.ras, suitThresh = 1,
                             gapThresh = 4, spurThresh = 4)
-plot(pm.result.map_0.05m, main="PM - 0.5m; 4 cell gap; 4 cell spur")
+mapview::mapview(pm.result.map_0.05m, 
+                 col.regions=c("yellow", "transparent"), 
+                 alpha=0.5, na.color = "transparent", 
+                 legend = FALSE, 
+                 maxpixels=1000000)
 ```
+<img src="images/single.png" align="right" width="150"/>
 
 ### Compute all suit-gap-spur combination outcomes as a raster
 Here is some description text
@@ -22,11 +27,13 @@ Here is some description text
 pm.layered.result.map <- patchMorph(data_in = example.ras, suitVals = c(0, 1, 2),
                                              gapVals = c(4, 20, 9), spurVals = c(4, 20, 9))
 pm.layered.sum.map <- patchMorphSummary(pm.layered.result.map)
-RStoolbox::ggR(pm.layered.sum.map, geom_raster = TRUE) +
-  ggplot2::scale_fill_gradientn(name = NULL,
-                                colors=lidR::height.colors(10), na.value = "transparent") +
-  ggplot2::ggtitle("PM Multi - 0.5m; 4-20 cell gap; 4-20 cell spur")
+mapview::mapview(pm.layered.sum.map, 
+                 col.regions=c("red", "transparent"), 
+                 alpha=0.5, na.color = "transparent", 
+                 legend = FALSE, 
+                 maxpixels=1000000)
 ```
+<img src="images/multi.png" align="right" width="150"/>
 
 # Install `patchwoRk`
 * Get the latest stable development version from github with
