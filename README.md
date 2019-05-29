@@ -19,7 +19,7 @@ mapview::mapview(pm.result.map_0.05m,
                  legend = FALSE, 
                  maxpixels=1000000)
 ```
-<img src="images/single.png" align="right" width="150"/>
+<img src="images/single.png" align="right" width="350"/>
 
 ### Compute all suit-gap-spur combination outcomes as a raster
 Here is some description text
@@ -33,7 +33,7 @@ mapview::mapview(pm.layered.sum.map,
                  legend = FALSE, 
                  maxpixels=1000000)
 ```
-<img src="images/multi.png" align="right" width="150"/>
+<img src="images/multi.png" align="right" width="350"/>
 
 # Install `patchwoRk`
 * Get the latest stable development version from github with
