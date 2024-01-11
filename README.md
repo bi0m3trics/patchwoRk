@@ -13,7 +13,7 @@ Here is some description text
 library(patchwoRk)
 # Example raster from Flagstaff (FUWI LEARN - 1.5-3 
 # evidence-based restoration)
-example.ras <- rast("./tifs/ClippedFUWI_1.5-3.tif")
+example.ras <- rast(system.file("extdata", "ClippedFUWI_1.5-3.tif", package="patchwoRk"))
 # As in the original PatchMorph, the gap and spur values must be
 # at least twice the cellsize
 #-------0.5m ratser------------------------------
