@@ -1,6 +1,6 @@
 #' patchMorphSummary
 #'
-#' @param pm_list A list of patchMorph RasterLayers (pm_list).
+#' @param pm_list A list of patchMorph SpatRasters (pm_list).
 #' @param suit A integer. The values of suitability over which to provide summaries. If left blank, all
 #' values in the pm_laist object will be used.
 #' @param gap A integer. The gap values over which to provide summaries. If left blank, all
@@ -14,35 +14,44 @@
 #  case of PatchMorph() where the suitability, gap, and spur thresholds are provided
 #' @examples
 #' myFile <- system.file("extdata", "mixedconifer.tif", package="patchwoRk")
-#' myRas <- raster(myFile)
+#' myRas <- rast(myFile)
 #'
-#' pm.layered.result.map <- patchMorph(data_in = myRas, suitVals = c(0, 1, 2),
+#' pm.layered.result <- patchMorph(data_in = myRas, suitVals = c(0, 1, 2),
 #' gapVals = c(2, 6, 3), spurVals = c(2, 6, 3))
-#' pm.layered.sum. <- patchMorphSummary(pm.layered.result)
+#' pm.layered.sum <- patchMorphSummary(pm.layered.result)
 #'
 #' plot(myRas, main="Original Raster")
 #' plot(pm.layered.sum, main="PatchMorph Multi Results (Gap-2:10 & Spur-2:10)")
 #' @export
 patchMorphSummary <- function(pm_list, suit=-1, gap=-1, spur=-1)
 {
-  if(!is.list(pm_list))
+  if (!is.list(pm_list))
     stop("pm_list must be a list")
-  if(class(pm_list[[1]]) != "RasterLayer")
-    stop("pm_list must be a list of RasterLayers")
 
-  pm_mat_list <- pm_list
-  for(i in 1:length(pm_list))
-    pm_mat_list[[i]] <- matrix(pm_list[[i]]@data@values, ncol=ncol(pm_list[[i]]), byrow=T)
+  if (!all(sapply(pm_list, inherits, "SpatRaster")))
+    stop("pm_list must be a list of SpatRasters")
 
-  if(!is.numeric(c(suit, gap, spur)))
+  pm_mat_list <- vector("list", length(pm_list))
+  for (i in seq_along(pm_list)) {
+    # Convert SpatRaster to matrix
+    pm_mat_list[[i]] <- terra::as.matrix(pm_list[[i]])
+  }
+
+  if (!is.numeric(c(suit, gap, spur)))
     stop("suit, gap, and spur must be numeric values")
 
-  if(suit > -1)
+  # Filtering based on suit, gap, and spur values if provided
+  if (suit > -1)
     pm_mat_list <- pm_mat_list[grep(paste("suit", suit, sep=""), names(pm_mat_list))]
-  if(gap > -1)
+  if (gap > -1)
     pm_mat_list <- pm_mat_list[grep(paste("gap", gap, sep=""), names(pm_mat_list))]
-  if(spur > -1)
+  if (spur > -1)
     pm_mat_list <- pm_mat_list[grep(paste("spur", spur, sep=""), names(pm_mat_list))]
 
-  return(matrixToRaster(Reduce("+", pm_mat_list), pm_list[[1]]))
+  # Sum the matrices and convert back to SpatRaster
+  summed_matrix <- Reduce(`+`, pm_mat_list)
+  summed_raster <- terra::rast(pm_list[[1]])
+  terra::values(summed_raster) <- summed_matrix
+
+  return(summed_raster)
 }

@@ -4,12 +4,21 @@
 \alias{patchMorph}
 \title{patchMorph}
 \usage{
-patchMorph(data_in, res = -1, suitThresh = -1, gapThresh = -1,
-  spurThresh = -1, suitVals = -1, gapVals = -1, spurVals = -1,
-  proj4 = -1, ...)
+patchMorph(
+  data_in,
+  res = -1,
+  suitThresh = -1,
+  gapThresh = -1,
+  spurThresh = -1,
+  suitVals = -1,
+  gapVals = -1,
+  spurVals = -1,
+  proj4 = -1,
+  ...
+)
 }
 \arguments{
-\item{data_in}{A RasterLayer or a SpatialPolygonsDataFrame. Map of suitable/non-suitable habitat}
+\item{data_in}{A SpatRaster. Map of suitable/non-suitable habitat}
 
 \item{suitThresh}{A interger. A threshold value over which some organism may perceive the area as
 suitable habitat (resulting in a binary map of suitable and non-suitable pixels)}
@@ -40,15 +49,15 @@ patchMorph
 }
 \examples{
 myFile <- system.file("extdata", "mixedconifer.tif", package="patchwoRk")
-myRas <- raster(myFile)
+myRas <- rast(myFile)
 
 pm.result.single <- patchMorph(data_in = myRas, suitThresh = 1, gapThresh = 2, spurThresh = 2)
 plot(pm.result.single, main="PatchMorph Results (Gap-2 & Spur-2)")
 
-pm.layered.result.map <- patchMorph(data_in = myRas, suitVals = c(0, 1, 2),
+pm.layered.result <- patchMorph(data_in = myRas, suitVals = c(0, 1, 2),
 gapVals = c(2, 6, 3), spurVals = c(2, 6, 3))
 names(pm.layered.result)
-plot(pm.layered.result.[1], main=names(pm.layered.result.[1]))
+plot(pm.layered.result[[1]], main=names(pm.layered.result)[1])
 
 }
 \references{

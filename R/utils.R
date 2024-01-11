@@ -10,17 +10,31 @@ getCircleKernel <- function(radius)
   return(kernel)
 }
 
-matrixToRaster.RasterLayer <- function(data_in, ras_match)
-{
-  return(raster(data_in, template=ras_match))
+matrixToRaster.SpatRaster <- function(data_in, ras_match) {
+  # Create an empty SpatRaster with the same properties as ras_match
+  result_raster <- rast(ras_match)
+
+  # Check if the dimensions of the matrix and the SpatRaster match
+  if (nrow(data_in) != nrow(result_raster) || ncol(data_in) != ncol(result_raster)) {
+    stop("Dimensions of matrix do not match the dimensions of the SpatRaster template")
+  }
+
+  # Assign the matrix values to the SpatRaster
+  values(result_raster) <- as.vector(data_in)
+
+  return(result_raster)
 }
 
-matrixToRaster.default <- function(data_in, res, proj4=CRS("+proj=utm +zone=12 +ellps=GRS80"))
-{
-  ras_match <- raster(nrows=nrow(data_in), ncols=ncol(data_in),
-                      xmn=0, xmx=ncol(data_in) * res,
-                      ymn=0, ymx=nrow(data_in) * res, crs=proj4)
-  return(matrixToRaster(data_in, ras_match))
+matrixToRaster <- function(data_in, res, crs = "+proj=utm +zone=12 +ellps=GRS80") {
+  nrows <- nrow(data_in)
+  ncols <- ncol(data_in)
+  xmn <- 0
+  xmx <- ncols * res
+  ymn <- 0
+  ymx <- nrows * res
+  r <- rast(nrows = nrows, ncols = ncols, xmin = xmn, xmax = xmx, ymin = ymn, ymax = ymx, crs = crs)
+  values(r) <- as.vector(data_in)
+  return(r)
 }
 
 matrixToRaster <- function(data_in, ras_match, ...)

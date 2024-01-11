@@ -7,7 +7,7 @@
 patchMorphSummary(pm_list, suit = -1, gap = -1, spur = -1)
 }
 \arguments{
-\item{pm_list}{A list of patchMorph RasterLayers (pm_list).}
+\item{pm_list}{A list of patchMorph SpatRasters (pm_list).}
 
 \item{suit}{A integer. The values of suitability over which to provide summaries. If left blank, all
 values in the pm_laist object will be used.}
@@ -26,11 +26,11 @@ patchMorphSummary
 }
 \examples{
 myFile <- system.file("extdata", "mixedconifer.tif", package="patchwoRk")
-myRas <- raster(myFile)
+myRas <- rast(myFile)
 
-pm.layered.result.map <- patchMorph(data_in = myRas, suitVals = c(0, 1, 2),
+pm.layered.result <- patchMorph(data_in = myRas, suitVals = c(0, 1, 2),
 gapVals = c(2, 6, 3), spurVals = c(2, 6, 3))
-pm.layered.sum. <- patchMorphSummary(pm.layered.result)
+pm.layered.sum <- patchMorphSummary(pm.layered.result)
 
 plot(myRas, main="Original Raster")
 plot(pm.layered.sum, main="PatchMorph Multi Results (Gap-2:10 & Spur-2:10)")
