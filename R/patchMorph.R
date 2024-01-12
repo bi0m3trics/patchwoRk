@@ -66,7 +66,7 @@ patchMorph.SpatRaster <- function(data_in, suitThresh = 1, gapThresh = 2, spurTh
   data_in <- terra::distance(data_in, target = data_in[data_in <= suitThresh])
 
   ## Apply a focal maximum
-  data_in <- terra::focal(data_in, gapKernel, fun=max, na.rm=TRUE, expand=FALSE)
+  data_in <- terra::focal(data_in, gapKernel, fun=max, na.rm=TRUE, na.policy="omit", fillvalue=NA, expand = TRUE)
   data_in<-terra::mask(data_in, e.mask)
 
   cat("Processing gap threshold diameter:", ncol(gapKernel)-1,"pixels\n")
@@ -81,7 +81,7 @@ patchMorph.SpatRaster <- function(data_in, suitThresh = 1, gapThresh = 2, spurTh
   data_in <- terra::distance(data_in, target = data_in[data_in <= suitThresh])
 
   ## Apply a focal maximum
-  data_in <- terra::focal(data_in, spurKernel, fun=max, na.rm=TRUE, pad=FALSE)
+  data_in <- terra::focal(data_in, spurKernel, fun=max, na.rm=TRUE, na.policy="omit", fillvalue=NA, expand = TRUE)
   data_in <- terra::mask(data_in, e.mask)
 
   cat("Processing spur threshold diameter:",ncol(spurKernel)-1, "pixels\n")
@@ -96,34 +96,23 @@ patchMorph.SpatRaster <- function(data_in, suitThresh = 1, gapThresh = 2, spurTh
 #' spur values are specified and all possible outcomes are returned.
 #' @method patchMorph pmMulti
 #' @export
-patchMorph.pmMulti <- function(data_in, suitVals=c(0,1,2), gapVals=c(2,8,4), spurVals=c(2,8,4), ...)
-{
+patchMorph.pmMulti <- function(data_in, suitVals=c(0,1,2), gapVals=c(2,8,4), spurVals=c(2,8,4), ...) {
   if(class(data_in) == "matrix"){
     data_in <- matrixToRaster(data_in, ...)
-  }else if(class(data_in) != "SpatRaster"){
+  } else if(class(data_in) != "SpatRaster"){
     stop("data_in must be of class SpatRaster, matrix, or data.frame")
   }
 
-  ## As in the paper, we won't consider the lowest suitability class
   suitSeq <- seq(suitVals[1], suitVals[2], (suitVals[2] - suitVals[1]) / (suitVals[3] - 1))[-1]
   gapSeq  <- seq(gapVals[1], gapVals[2], (gapVals[2] - gapVals[1]) / (gapVals[3] - 1))
   spurSeq <- seq(spurVals[1], spurVals[2], (spurVals[2] - spurVals[1]) / (spurVals[3] - 1))
 
-  outList <- list()
-  for(i in 1:length(suitSeq))
-  {
-    for(j in 1:length(gapSeq))
-    {
-      for(k in 1:length(spurSeq))
-      {
-        outList <- append(outList, list(patchMorph(data_in, suitThresh = suitSeq[i], gapThresh = gapSeq[j], spurThresh = spurSeq[k])))
-      }
-    }
-  }
-  outList <- unlist(outList)
-  labels <- expand.grid(q=suitSeq,r=gapSeq, s=spurSeq)
-  labels <- apply(labels,1, function(x) paste("suit", x[1], "gap", x[2], "spur", x[3], sep=""))
-  names(outList)<-labels
+  combinations <- expand.grid(suitSeq, gapSeq, spurSeq)
+  outList <- apply(combinations, 1, function(thresholds) {
+    patchMorph(data_in, suitThresh = thresholds[1], gapThresh = thresholds[2], spurThresh = thresholds[3])
+  })
+
+  names(outList) <- apply(combinations, 1, function(x) paste("suit", x[1], "gap", x[2], "spur", x[3], sep=""))
 
   return(outList)
 }
