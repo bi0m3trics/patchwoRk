@@ -1,4 +1,4 @@
-# patchwoRk v1.0.2 (Release date: 2024-01-11)
+# patchwoRk v1.0.2 (Release date: 2024-02-08)
 <p>-added edge correction by using terra::extend and then removing the extended area
 before returning the final results<br>
 -added "verbose" argument to determine if processing information should be displayed<br>
