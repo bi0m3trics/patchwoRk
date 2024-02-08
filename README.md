@@ -18,9 +18,11 @@ example.ras <- rast(system.file("extdata", "ClippedFUWI_1.5-3.tif", package="pat
 # at least twice the cellsize
 #-------0.5m ratser------------------------------
 pm.result.map_0.05m <- patchMorph(data_in = example.ras, 
+                                  buffer = 4,
                                   suitThresh = 1,
                                   gapThresh = 4, 
-                                  spurThresh = 4)
+                                  spurThresh = 4, 
+                                  verbose = FALSE)
 pm.result.map_0.05m[pm.result.map_0.05m == 0] <- NA
 mapview::mapview(pm.result.map_0.05m, 
                  col.regions=c("transparent", viridis::magma(100)),
@@ -36,14 +38,16 @@ mapview::mapview(pm.result.map_0.05m,
 Here is some description text
 
 ```r
-pm.layered.result.map <- patchMorph(data_in = example.ras, 
+pm.layered.result.map <- patchMorph(data_in = example.ras,
+                                    buffer = max(c(4, 20, 9)),
                                     suitVals = c(0, 1, 2),
                                     gapVals = c(4, 20, 9), 
-                                    spurVals = c(4, 20, 9))
+                                    spurVals = c(4, 20, 9),
+                                    verbose = TRUE)
 pm.layered.sum.map <- patchMorphSummary(pm.layered.result.map)
 pm.layered.sum.map[pm.layered.sum.map == 0] <- NA
 mapview::mapview(pm.layered.sum.map, 
-                 col.regions=c("transparent", viridis::magma(100)),
+                 col.regions=viridis::magma(100),
                  alpha=0.5, na.color = "transparent", 
                  legend = FALSE, 
                  maxpixels=100000000)

@@ -28,8 +28,9 @@ patchMorphSummary
 myFile <- system.file("extdata", "mixedconifer.tif", package="patchwoRk")
 myRas <- rast(myFile)
 
-pm.layered.result <- patchMorph(data_in = myRas, suitVals = c(0, 1, 2),
-gapVals = c(2, 6, 3), spurVals = c(2, 6, 3))
+pm.layered.result <- patchMorph(data_in = myRas, buffer = max(c(2, 6, 3)),
+suitVals = c(0, 1, 2), gapVals = c(2, 6, 3),
+spurVals = c(2, 6, 3), verbose = TRUE)
 pm.layered.sum <- patchMorphSummary(pm.layered.result)
 
 plot(myRas, main="Original Raster")

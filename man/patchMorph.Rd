@@ -6,6 +6,7 @@
 \usage{
 patchMorph(
   data_in,
+  buffer = 2,
   res = -1,
   suitThresh = -1,
   gapThresh = -1,
@@ -14,11 +15,14 @@ patchMorph(
   gapVals = -1,
   spurVals = -1,
   proj4 = -1,
-  ...
+  verbose = TRUE...
 )
 }
 \arguments{
 \item{data_in}{A SpatRaster. Map of suitable/non-suitable habitat}
+
+\item{buffer}{A integer. The width of to be used to correct edge effects, should be equal to or
+larger than the max gap or spur}
 
 \item{suitThresh}{A interger. A threshold value over which some organism may perceive the area as
 suitable habitat (resulting in a binary map of suitable and non-suitable pixels)}
@@ -37,6 +41,8 @@ gap threshold, and the total number of values to be evaluated.}
 
 \item{spurVals}{Integer vector. A vector of size = 3 specifying the lower spur threshold, the upper
 spur threshold, and the total number of values to be evaluated.}
+
+\item{verbose}{Logical. A logical value indicating whether processing information should be displayed.}
 }
 \value{
 A RasterLayer or a list of RasterLayers of the same dimensions as data_in where 1's are
@@ -51,7 +57,7 @@ patchMorph
 myFile <- system.file("extdata", "mixedconifer.tif", package="patchwoRk")
 myRas <- rast(myFile)
 
-pm.result.single <- patchMorph(data_in = myRas, suitThresh = 1, gapThresh = 2, spurThresh = 2)
+pm.result.single <- patchMorph(data_in = myRas, buffer = 2, suitThresh = 1, gapThresh = 2, spurThresh = 2, verbose = FALSE)
 plot(pm.result.single, main="PatchMorph Results (Gap-2 & Spur-2)")
 
 pm.layered.result <- patchMorph(data_in = myRas, suitVals = c(0, 1, 2),

@@ -1,6 +1,8 @@
 #' patchMorph
 #'
 #' @param data_in A SpatRaster. Map of suitable/non-suitable habitat
+#' @param buffer A integer. The width of to be used to correct edge effects, should be equal to or
+#' larger than the max gap or spur
 #' @param suitThresh A interger. A threshold value over which some organism may perceive the area as
 #' suitable habitat (resulting in a binary map of suitable and non-suitable pixels)
 #' @param gapThresh A interger. The gap diameter of non-suitable land cover within a habitat patch
@@ -13,6 +15,7 @@
 #' gap threshold, and the total number of values to be evaluated.
 #' @param spurVals Integer vector. A vector of size = 3 specifying the lower spur threshold, the upper
 #' spur threshold, and the total number of values to be evaluated.
+#' @param verbose Logical. A logical value indicating whether processing information should be displayed.
 #' @return A RasterLayer or a list of RasterLayers of the same dimensions as data_in where 1's are
 #' suitbale habitat and 0's are unsutiable habitat. In the case of PM_Hierarchy, patchMorph returns
 #' a list of RasterLayers (one per suitability-gap-spur combination) outcomes, otherwise it returns
@@ -24,7 +27,7 @@
 #' myFile <- system.file("extdata", "mixedconifer.tif", package="patchwoRk")
 #' myRas <- rast(myFile)
 #'
-#' pm.result.single <- patchMorph(data_in = myRas, suitThresh = 1, gapThresh = 2, spurThresh = 2)
+#' pm.result.single <- patchMorph(data_in = myRas, buffer = 2, suitThresh = 1, gapThresh = 2, spurThresh = 2, verbose = FALSE)
 #' plot(pm.result.single, main="PatchMorph Results (Gap-2 & Spur-2)")
 #'
 #' pm.layered.result <- patchMorph(data_in = myRas, suitVals = c(0, 1, 2),
@@ -33,7 +36,7 @@
 #' plot(pm.layered.result[[1]], main=names(pm.layered.result)[1])
 #'
 #' @export
-patchMorph <- function(data_in, res=-1, suitThresh=-1, gapThresh=-1, spurThresh=-1, suitVals=-1, gapVals=-1, spurVals=-1, proj4=-1,...)
+patchMorph <- function(data_in, buffer = 2, res=-1, suitThresh=-1, gapThresh=-1, spurThresh=-1, suitVals=-1, gapVals=-1, spurVals=-1, proj4=-1,verbose = TRUE...)
 {
   if(length(suitThresh) == 1)
     class(data_in) <- "SpatRaster"
@@ -46,7 +49,7 @@ patchMorph <- function(data_in, res=-1, suitThresh=-1, gapThresh=-1, spurThresh=
 #' values is specified, for which the only that outcomes is returned
 #' @method patchMorph SpatRaster
 #' @export
-patchMorph.SpatRaster <- function(data_in, suitThresh = 1, gapThresh = 2, spurThresh = 2)
+patchMorph.SpatRaster <- function(data_in, buffer = 2, suitThresh = 1, gapThresh = 2, spurThresh = 2, verbose = TRUE)
 {
   if(!is.numeric(c(suitThresh, gapThresh, spurThresh)))
     stop("suitThresh, gapThresh, and spurThresh must be numeric.")
@@ -55,8 +58,11 @@ patchMorph.SpatRaster <- function(data_in, suitThresh = 1, gapThresh = 2, spurTh
 
   ## Set up the crs, the extent, and a NA mask for the original raster
   r.crs <- terra::crs(data_in)
-  r.e<-terra::ext(data_in)
-  e.mask<-terra::mask(data_in, data_in, maskvalue=0, updatevalue=1)
+  r.e <- terra::ext(data_in)
+  e.mask <- terra::mask(data_in, subst(data_in, 0:1, 1))
+
+  ## Extend the raster by the buffer (cropped before return)
+  data_in <- terra::extend(data_in, buffer, fill=NA)
 
   ## Get the associated kernels
   gapKernel  <- getCircleKernel(as.integer(gapThresh / 2))
@@ -66,10 +72,11 @@ patchMorph.SpatRaster <- function(data_in, suitThresh = 1, gapThresh = 2, spurTh
   data_in <- terra::distance(data_in, target = data_in[data_in <= suitThresh])
 
   ## Apply a focal maximum
-  data_in <- terra::focal(data_in, gapKernel, fun=max, na.rm=TRUE, na.policy="omit", fillvalue=NA, expand = TRUE)
-  data_in<-terra::mask(data_in, e.mask)
+  data_in <- terra::focal(data_in, gapKernel, fun="max", na.policy="omit", na.rm=TRUE)
+  # data_in <- terra::mask(data_in, e.mask)
 
-  cat("Processing gap threshold diameter:", ncol(gapKernel)-1,"pixels\n")
+  if(verbose == TRUE)
+    cat("Processing gap threshold diameter:", ncol(gapKernel)-1,"pixels\n")
   ## Reclassify based on the gap threshold
   data_in[data_in <= (ncol(gapKernel)+1)/2] <- 1
   data_in[data_in > (ncol(gapKernel)+1)/2] <- 0
@@ -81,13 +88,17 @@ patchMorph.SpatRaster <- function(data_in, suitThresh = 1, gapThresh = 2, spurTh
   data_in <- terra::distance(data_in, target = data_in[data_in <= suitThresh])
 
   ## Apply a focal maximum
-  data_in <- terra::focal(data_in, spurKernel, fun=max, na.rm=TRUE, na.policy="omit", fillvalue=NA, expand = TRUE)
-  data_in <- terra::mask(data_in, e.mask)
+  data_in <- terra::focal(data_in, spurKernel, fun="max", na.policy="omit", na.rm=TRUE)
+  # data_in <- terra::mask(data_in, e.mask)
 
-  cat("Processing spur threshold diameter:",ncol(spurKernel)-1, "pixels\n")
+
+  if(verbose == TRUE)
+    cat("Processing spur threshold diameter:",ncol(spurKernel)-1, "pixels\n")
   ## Reclassify based on the spur threshold
   data_in[data_in <= (ncol(spurKernel)+1)/2] <- 0
   data_in[data_in > (ncol(spurKernel)+1)/2] <- 1
+
+  data_in <- terra::crop(data_in, e.mask, mask=TRUE)
 
   return(data_in)
 }
@@ -96,7 +107,7 @@ patchMorph.SpatRaster <- function(data_in, suitThresh = 1, gapThresh = 2, spurTh
 #' spur values are specified and all possible outcomes are returned.
 #' @method patchMorph pmMulti
 #' @export
-patchMorph.pmMulti <- function(data_in, suitVals=c(0,1,2), gapVals=c(2,8,4), spurVals=c(2,8,4), ...) {
+patchMorph.pmMulti <- function(data_in, buffer = max(c(2,8,4)), suitVals=c(0,1,2), gapVals=c(2,8,4), spurVals=c(2,8,4), verbose = TRUE, ...) {
   if(class(data_in) == "matrix"){
     data_in <- matrixToRaster(data_in, ...)
   } else if(class(data_in) != "SpatRaster"){
@@ -109,7 +120,7 @@ patchMorph.pmMulti <- function(data_in, suitVals=c(0,1,2), gapVals=c(2,8,4), spu
 
   combinations <- expand.grid(suitSeq, gapSeq, spurSeq)
   outList <- apply(combinations, 1, function(thresholds) {
-    patchMorph(data_in, suitThresh = thresholds[1], gapThresh = thresholds[2], spurThresh = thresholds[3])
+    patchMorph(data_in, buffer = buffer, suitThresh = thresholds[1], gapThresh = thresholds[2], spurThresh = thresholds[3], verbose = verbose)
   })
 
   names(outList) <- apply(combinations, 1, function(x) paste("suit", x[1], "gap", x[2], "spur", x[3], sep=""))

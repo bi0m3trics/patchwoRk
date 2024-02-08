@@ -1,8 +1,8 @@
 Package: patchwoRk
 Type: Package
 Title: Patch Delineation Package
-Version: 1.0.1
-Date: 2024-01-11
+Version: 1.0.2
+Date: 2024-02-08
 Author: Andrew Sánchez Meador, School of Foresty, Northern Arizona University
 Maintainer: Andrew Sánchez Meador <andrew.sanchezmeador@nau.edu>
 Description: This package implements multiple patch delineation algorithms [at present it only implements 'PatchMorph' (Girvetz & Greco 2007), which can delineate patches across a range of spatial scales based on three organism-specific thresholds - (1) land cover density threshold, (2) habitat gap maximum thickness (gap threshold), and (3) habitat patch minimum thickness (spur threshold)].
