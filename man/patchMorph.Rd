@@ -19,28 +19,31 @@ patchMorph(
 )
 }
 \arguments{
-\item{data_in}{A SpatRaster. Map of suitable/non-suitable habitat}
+\item{data_in}{A SpatRaster. Map of suitable/non-suitable habitat (e.g., suitable = 1, non-suitable = 0)}
 
 \item{buffer}{A integer. The width of to be used to correct edge effects, should be equal to or
-larger than the max gap or spur}
+larger than the max gap or spur threshold}
 
 \item{suitThresh}{A interger. A threshold value over which some organism may perceive the area as
 suitable habitat (resulting in a binary map of suitable and non-suitable pixels)}
 
 \item{gapThresh}{A interger. The gap diameter of non-suitable land cover within a habitat patch
-that should be considered part of the patch if small enough}
+that should be considered part of the patch if small enough. Units are the same as data_in}
 
 \item{spurThresh}{A interger. The width of a section of narrow, unsuitable edge habitat extending
-out from a larger, wider patch that is too thin to be considered part of suitable habitat}
+out from a larger, wider patch that is too thin to be considered part of suitable habitat Units are
+the same as data_in}
 
 \item{suitVals}{Integer vector. A vector of size = 3 specifying the lower suitability threshold,
-the upper suitability threshold, and the total number of values to be evaluated.}
+the upper suitability threshold, and the total number of values to be evaluated. Assumed to be increasing}
 
 \item{gapVals}{Integer vector. A vector of size = 3 specifying the lower gap threshold, the upper
-gap threshold, and the total number of values to be evaluated.}
+gap threshold, and the total number of values to be evaluated. Assumed to be increasing and the units are
+the same as data_in}
 
 \item{spurVals}{Integer vector. A vector of size = 3 specifying the lower spur threshold, the upper
-spur threshold, and the total number of values to be evaluated.}
+spur threshold, and the total number of values to be evaluated.Assumed to be increasing and the units are
+the same as data_in}
 
 \item{verbose}{Logical. A logical value indicating whether processing information should be displayed.}
 }

@@ -41,3 +41,7 @@ matrixToRaster <- function(data_in, ras_match, ...)
 {
   UseMethod("matrixToRaster", ras_match)
 }
+
+is_strictly_increasing <- function(x) {
+  all(diff(x) > 0)
+}

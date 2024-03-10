@@ -7,16 +7,20 @@
 patchMorphSummary(pm_list, suit = -1, gap = -1, spur = -1)
 }
 \arguments{
-\item{pm_list}{A list of patchMorph SpatRasters (pm_list).}
+\item{pm_list}{A list of patchMorph SpatRasters (pm_list) all in the same
+units and with the same resolution.}
 
-\item{suit}{A integer. The values of suitability over which to provide summaries. If left blank, all
-values in the pm_laist object will be used.}
+\item{suit}{A integer. The values of suitability over which to provide
+summaries. If left blank, all values in the suit object will be used.
+Assumed to be increasing and in the same units as data_in}
 
-\item{gap}{A integer. The gap values over which to provide summaries. If left blank, all
-values in the pm_laist object will be used.}
+\item{gap}{A integer. The gap values over which to provide summaries. If left
+blank, all values in the gap object will be used. Assumed to be increasing and
+in the same units as data_in}
 
-\item{spur}{A integer. The spur valuesover which to provide summaries. If left blank, all
-values in the pm_laist object will be used.}
+\item{spur}{A integer. The spur valuesover which to provide summaries. If
+left blank, all values in the spur object will be used. Assumed to be
+increasing and in the same units as data_in}
 }
 \value{
 A rasterLayer. Sums the members of a patchMorph list (pm_list) from pm_hierarchy

@@ -1,20 +1,23 @@
 #' patchMorph
 #'
-#' @param data_in A SpatRaster. Map of suitable/non-suitable habitat
+#' @param data_in A SpatRaster. Map of suitable/non-suitable habitat (e.g., suitable = 1, non-suitable = 0)
 #' @param buffer A integer. The width of to be used to correct edge effects, should be equal to or
-#' larger than the max gap or spur
+#' larger than the max gap or spur threshold
 #' @param suitThresh A interger. A threshold value over which some organism may perceive the area as
 #' suitable habitat (resulting in a binary map of suitable and non-suitable pixels)
 #' @param gapThresh A interger. The gap diameter of non-suitable land cover within a habitat patch
-#' that should be considered part of the patch if small enough
+#' that should be considered part of the patch if small enough. Units are the same as data_in
 #' @param spurThresh A interger. The width of a section of narrow, unsuitable edge habitat extending
-#' out from a larger, wider patch that is too thin to be considered part of suitable habitat
+#' out from a larger, wider patch that is too thin to be considered part of suitable habitat Units are
+#' the same as data_in
 #' @param suitVals Integer vector. A vector of size = 3 specifying the lower suitability threshold,
-#' the upper suitability threshold, and the total number of values to be evaluated.
+#' the upper suitability threshold, and the total number of values to be evaluated. Assumed to be increasing
 #' @param gapVals Integer vector. A vector of size = 3 specifying the lower gap threshold, the upper
-#' gap threshold, and the total number of values to be evaluated.
+#' gap threshold, and the total number of values to be evaluated. Assumed to be increasing and the units are
+#' the same as data_in
 #' @param spurVals Integer vector. A vector of size = 3 specifying the lower spur threshold, the upper
-#' spur threshold, and the total number of values to be evaluated.
+#' spur threshold, and the total number of values to be evaluated.Assumed to be increasing and the units are
+#' the same as data_in
 #' @param verbose Logical. A logical value indicating whether processing information should be displayed.
 #' @return A RasterLayer or a list of RasterLayers of the same dimensions as data_in where 1's are
 #' suitbale habitat and 0's are unsutiable habitat. In the case of PM_Hierarchy, patchMorph returns
@@ -52,9 +55,11 @@ patchMorph <- function(data_in, buffer = 2, res=-1, suitThresh=-1, gapThresh=-1,
 patchMorph.SpatRaster <- function(data_in, buffer = 2, suitThresh = 1, gapThresh = 2, spurThresh = 2, verbose = TRUE)
 {
   if(!is.numeric(c(suitThresh, gapThresh, spurThresh)))
-    stop("suitThresh, gapThresh, and spurThresh must be numeric.")
-  if(gapThresh < 2 | spurThresh < 2)
-    stop("Gap/Spur threshold is too small! Must be at least twice the raster resolution.")
+    stop("suitThresh, gapThresh, and spurThresh must be numeric!!")
+  if(gapThresh < max(terra::res(data_in)) | spurThresh < max(terra::res(data_in)))
+    stop("Gap/Spur threshold is too small!! Must be at least twice the maximum resolution of the provided raster.")
+  if (is.na(crs(data_in)) || crs(data_in) == "")
+    stop("CRS is NULL or blank!!")
 
   ## Set up the crs, the extent, and a NA mask for the original raster
   r.crs <- terra::crs(data_in)
@@ -65,8 +70,8 @@ patchMorph.SpatRaster <- function(data_in, buffer = 2, suitThresh = 1, gapThresh
   data_in <- terra::extend(data_in, buffer, fill=NA)
 
   ## Get the associated kernels
-  gapKernel  <- getCircleKernel(as.integer(gapThresh / 2))
-  spurKernel <- getCircleKernel(as.integer(spurThresh / 2))
+  gapKernel  <- getCircleKernel(ceiling((gapThresh / 2)))
+  spurKernel <- getCircleKernel(ceiling((spurThresh / 2)))
 
   ## Get the euclidean distances to suitable habitat, and ensure the extent is the same as original
   data_in <- terra::distance(data_in, target = data_in[data_in <= suitThresh])
@@ -76,7 +81,7 @@ patchMorph.SpatRaster <- function(data_in, buffer = 2, suitThresh = 1, gapThresh
   # data_in <- terra::mask(data_in, e.mask)
 
   if(verbose == TRUE)
-    cat("Processing gap threshold diameter:", ncol(gapKernel)-1,"pixels\n")
+    cat("Processing gap threshold diameter:", ncol(gapKernel)-1, terra::units(data_in), "\n")
   ## Reclassify based on the gap threshold
   data_in[data_in <= (ncol(gapKernel)+1)/2] <- 1
   data_in[data_in > (ncol(gapKernel)+1)/2] <- 0
@@ -93,7 +98,7 @@ patchMorph.SpatRaster <- function(data_in, buffer = 2, suitThresh = 1, gapThresh
 
 
   if(verbose == TRUE)
-    cat("Processing spur threshold diameter:",ncol(spurKernel)-1, "pixels\n")
+    cat("Processing spur threshold diameter:",ncol(spurKernel)-1, terra::units(data_in), "\n")
   ## Reclassify based on the spur threshold
   data_in[data_in <= (ncol(spurKernel)+1)/2] <- 0
   data_in[data_in > (ncol(spurKernel)+1)/2] <- 1
@@ -108,10 +113,24 @@ patchMorph.SpatRaster <- function(data_in, buffer = 2, suitThresh = 1, gapThresh
 #' @method patchMorph pmMulti
 #' @export
 patchMorph.pmMulti <- function(data_in, buffer = max(c(2,8,4)), suitVals=c(0,1,2), gapVals=c(2,8,4), spurVals=c(2,8,4), verbose = TRUE, ...) {
+
   if(class(data_in) == "matrix"){
     data_in <- matrixToRaster(data_in, ...)
   } else if(class(data_in) != "SpatRaster"){
     stop("data_in must be of class SpatRaster, matrix, or data.frame")
+  }
+
+  # Checking if the values are strictly increasing
+  buffer_increasing <- is_strictly_increasing(buffer)
+  suitVals_increasing <- is_strictly_increasing(suitVals)
+  gapVals_increasing <- is_strictly_increasing(gapVals)
+  spurVals_increasing <- is_strictly_increasing(spurVals)
+
+  # Combine all checks
+  all_increasing <- buffer_increasing && suitVals_increasing && gapVals_increasing && spurVals_increasing
+
+  if (!all_increasing) {
+    stop("Not all input vectors are strictly increasing!!")
   }
 
   suitSeq <- seq(suitVals[1], suitVals[2], (suitVals[2] - suitVals[1]) / (suitVals[3] - 1))[-1]
