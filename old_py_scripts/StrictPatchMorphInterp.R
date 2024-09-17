@@ -22,16 +22,14 @@ getCircularKernel <- function(radius)
 
 # Define a function to process rasters based on suitability, gap, and spur parameters
 process_rasters_patchmorph <- function(input_raster, suitList, gapList, spurList) {
-  # Load the input raster
-  r <- rast(input_raster)
-  
+
   # Initialize a list to store the processed rasters
   rasters <- list()
   
   # Loop over the suitability levels
   for (suit in suitList) {
     # Reclassify the raster based on the current suitability level
-    rSuit <- classify(r, matrix(c(-Inf, suit, NA, suit, Inf, 1), ncol=3, byrow=TRUE), right = FALSE)
+    rSuit <- classify(input_raster, matrix(c(-Inf, suit, NA, suit, Inf, 1), ncol=3, byrow=TRUE), right = FALSE)
     
     # Loop over the gap distances
     for (cntGap in gapList) {
@@ -43,34 +41,34 @@ process_rasters_patchmorph <- function(input_raster, suitList, gapList, spurList
         
         # Calculate the Euclidean distance for each cell in the suitability raster
         rDist <- terra::distance(rSuit)
-        
+        # plot(rDist)
         # Create a circular kernel based on the spur distance
-        spurKernal <- getCircularKernel((spurDist/2))
+        spurKernal <- getCircularKernel(spurDist / res(input_raster)[1])
         
         # Apply the maximum focal operation to the distance raster using the spur kernel
         rFocal <- focal(rDist, w = spurKernal, fun = max, na.rm = TRUE)
-        
+        # plot(rFocal)
         # Reclassify the raster based on the spur distance
         rSpur <- classify(rFocal, matrix(c(-Inf, spurDist/2, NA, spurDist/2, Inf, 1), ncol=3, byrow=TRUE), right = FALSE)
-        
+        # plot(rSpur)
         # Calculate the Euclidean distance for each cell in the spur raster
         rDist2 <- terra::distance(rSpur)
-        
+        # plot(rDist2)
         # Create a circular kernel based on the gap distance
-        gapKernal <- getCircularKernel((gapDist/2))
+        gapKernal <- getCircularKernel(gapDist / res(input_raster)[1])
         
         # Apply the maximum focal operation to the distance raster using the gap kernel
         rFocal2 <- focal(rDist2, w = gapKernal, fun = max, na.rm = TRUE)
-        
+        # plot(rFocal2)
         # Reclassify the raster based on the gap distance
         rGap <- classify(rFocal2, matrix(c(-Inf, gapDist/2, NA, gapDist/2, Inf, 1), ncol=3, byrow=TRUE), right = FALSE)
-        
+        # plot(rGap)
         # Print a message indicating the current parameters
         message(paste("Processing Suitability:", suit, "Gap:", cntGap, "Spur:", cntSpur))
         
         # Assign a name to the raster based on the current parameters
         names(rGap) <- paste("suit", suit, "gap", cntGap, "spur", cntSpur, sep = "_")
-        
+        # plot(rGap)
         # Add the raster to the list
         rasters[[length(rasters) + 1]] <- rGap
       }
