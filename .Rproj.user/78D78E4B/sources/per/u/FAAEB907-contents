@@ -1,0 +1,34 @@
+library(raster)
+library(sf)
+library(exactextractr)
+library(fasterize)
+library(patchwoRk)
+
+example.ras <- raster("./tifs/ClippedFUWI_1.5-3.tif")
+
+
+poly <- st_as_sf(as(extent(example.ras), 'SpatialPolygons'))
+center <- st_centroid(poly)
+
+grd <- sf::st_make_grid(poly, cellsize = 200, crs = projection(example.ras))
+
+image(example.ras, asp=1)
+plot(grd, add=TRUE)
+
+for (i in 1:(length(grd))) {
+  plot(grd[i,], col = 'red', add = TRUE)
+  
+  buff_focus <- st_buffer(grd[i,],10)
+  focus <- mask(example.ras, as_Spatial(st_geometry(buff_focus)))
+  
+  pm.layered.result.map <- patchMorph(data_in = focus, 
+                                      suitVals = c(0, 1, 2),
+                                      gapVals = c(4, 20, 9), 
+                                      spurVals = c(4, 20, 9))
+  pm.layered.sum.map <- patchMorphSummary(pm.layered.result.map)
+  
+  focus <- crop(pm.layered.sum.map, as_Spatial(st_geometry(grd[i,])))
+  
+  pal <- viridis::magma(100)
+  plot(focus, add=TRUE, col=pal)
+}
